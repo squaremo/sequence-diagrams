@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram>
+<source><![CDATA[client1:Actor "Client"
+docker-core:Node "Docker Core"
+docker-network:Node "Docker Network"
+libnetwork:Node "libnetwork"
+datastore:Node[p] "Datastore"
+plugin-hub:Node "Plugin Hub"
+network-plugin:Node "Net Plugin"
+ipam:Node "IPAM"
+
+client1:docker-core.(docker run -net=foo xxx yyy)
+docker-core:docker-core.createContainer()
+docker-core:docker-network.createEndpoint(container-id, "foo")
+docker-network:endpoint-1=libnetwork.createEndpoint("foo")
+
+docker-network:libnetwork.linkEndpoint(container-id, endpoint-1)
+libnetwork:plugin-hub.linkEndpoint(endpoint-object)
+plugin-hub:network-plugin.linkEndpoint API
+network-plugin:ipam.getIP(<subnet>)
+ipam:datastore.cas("ipam",<subnet>,<ip>)
+*1 network-plugin
+cas (compare and swap) for
+dist datastore consistency
+*1
+
+libnetwork:datastore.put(EP-store, "foo", endpoint-set)
+
+*1 libnetwork
+endpoint-set is a set of all 
+endpoints in a network.
+This can be eventualy-consistent
+*1
+
+[c: Asynchronous Datastore event on host2 for end-point creation in host1]
+
+datastore:docker-network.New endpoint added to foo in host1
+*1 libnetwork
+This async event is realized only
+on those hosts where there is an
+active interest to the network "foo"
+*1
+
+docker-network:libnetwork.remoteEndpointAdded(host1, "foo", endpoint-1)
+libnetwork:plugin-hub.remoteEndpoint(endpoint-object)
+*2 libnetwork
+endpoint-object is defined in the
+remote plugin protocol api
+*2
+plugin-hub:network-plugin.addRemoteEndpoint API
+*2 plugin-hub
+Plugin does its thing
+to connect containers 
+across hosts
+*2
+
+[/c]
+]]></source>
+<configuration>
+<property name="activationBarBorderThickness" value="1"/>
+<property name="actorWidth" value="25"/>
+<property name="arrowColor" value="-14803256"/>
+<property name="arrowSize" value="6"/>
+<property name="arrowThickness" value="1"/>
+<property name="colorizeThreads" value="true"/>
+<property name="destructorWidth" value="30"/>
+<property name="explicitReturns" value="false"/>
+<property family="Dialog" name="font" size="12" style="0"/>
+<property name="fragmentBorderThickness" value="2"/>
+<property name="fragmentEdgeColor" value="-16751616"/>
+<property name="fragmentLabelBgColor" value="-36"/>
+<property name="fragmentMargin" value="8"/>
+<property name="fragmentPadding" value="10"/>
+<property name="fragmentTextPadding" value="3"/>
+<property name="glue" value="10"/>
+<property name="headHeight" value="35"/>
+<property name="headLabelPadding" value="5"/>
+<property name="headWidth" value="100"/>
+<property name="initialSpace" value="10"/>
+<property name="labeledBoxBgColor" value="-76"/>
+<property name="leftMargin" value="5"/>
+<property name="lifelineThickness" value="1"/>
+<property name="lineWrap" value="false"/>
+<property name="lowerMargin" value="5"/>
+<property name="mainLifelineWidth" value="8"/>
+<property name="messageLabelSpace" value="3"/>
+<property name="messagePadding" value="6"/>
+<property name="noteBgColor" value="-76"/>
+<property name="noteBorderThickness" value="1"/>
+<property name="noteMargin" value="6"/>
+<property name="notePadding" value="6"/>
+<property name="opaqueMessageText" value="false"/>
+<property name="returnArrowVisible" value="true"/>
+<property name="rightMargin" value="5"/>
+<property name="selfMessageHorizontalSpace" value="15"/>
+<property name="separatorBottomMargin" value="8"/>
+<property name="separatorTopMargin" value="15"/>
+<property name="shouldShadowParticipants" value="true"/>
+<property name="slackMode" value="false"/>
+<property name="spaceBeforeActivation" value="2"/>
+<property name="spaceBeforeAnswerToSelf" value="10"/>
+<property name="spaceBeforeConstruction" value="6"/>
+<property name="spaceBeforeSelfMessage" value="7"/>
+<property name="subLifelineWidth" value="6"/>
+<property name="tc0" value="-1118482"/>
+<property name="tc1" value="-256"/>
+<property name="tc2" value="-65536"/>
+<property name="tc3" value="-16776961"/>
+<property name="tc4" value="-16711936"/>
+<property name="tc5" value="-4144960"/>
+<property name="tc6" value="-65281"/>
+<property name="tc7" value="-14336"/>
+<property name="tc8" value="-20561"/>
+<property name="tc9" value="-12566464"/>
+<property name="threadNumbersVisible" value="false"/>
+<property name="threaded" value="false"/>
+<property name="upperMargin" value="5"/>
+<property name="verticallySplit" value="true"/>
+</configuration>
+</diagram>
