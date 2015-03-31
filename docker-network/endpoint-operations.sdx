@@ -4,26 +4,17 @@
 docker-core:Node "Docker Core"
 docker-network:Node "Docker Network"
 libnetwork:Node "libnetwork"
-datastore:Node[p] "Datastore"
-plugin-hub:Node "Plugin Hub"
+datastore-remote:Node[ep] "Datastore-remote"
+datastore:Node "Datastore"
 network-plugin:Node "Net Plugin"
 ipam:Node "IPAM"
 
 client1:docker-core.(docker run -net=foo xxx yyy)
 docker-core:docker-core.createContainer()
-docker-core:docker-network.createEndpoint(container-id, "foo")
+docker-core[1]:docker-network.createEndpoint(container-id, "foo")
 docker-network:endpoint-1=libnetwork.createEndpoint("foo")
 
 docker-network:libnetwork.linkEndpoint(container-id, endpoint-1)
-libnetwork:plugin-hub.linkEndpoint(endpoint-object)
-plugin-hub:network-plugin.linkEndpoint API
-network-plugin:ipam.getIP(<subnet>)
-ipam:datastore.cas("ipam",<subnet>,<ip>)
-*1 network-plugin
-cas (compare and swap) for
-dist datastore consistency
-*1
-
 libnetwork:datastore.put(EP-store, "foo", endpoint-set)
 
 *1 libnetwork
@@ -32,23 +23,32 @@ endpoints in a network.
 This can be eventualy-consistent
 *1
 
+datastore:network-plugin.Endpoint Watch event
+network-plugin:ipam.getIP(<subnet>)
+ipam:datastore.cas("ipam",<subnet>,<ip>)
+*1 network-plugin
+cas (compare and swap) for
+dist datastore consistency
+*1
+
+docker-core[0]:docker-core.startContainer()
 [c: Asynchronous Datastore event on host2 for end-point creation in host1]
 
-datastore:docker-network.New endpoint added to foo in host1
+datastore-remote:docker-network.New endpoint added to foo in host1
 *1 libnetwork
 This async event is realized only
 on those hosts where there is an
-active interest to the network "foo"
+active watch on network "foo"
 *1
 
 docker-network:libnetwork.remoteEndpointAdded(host1, "foo", endpoint-1)
-libnetwork:plugin-hub.remoteEndpoint(endpoint-object)
+libnetwork:datastore.remoteEndpoint(endpoint-object)
 *2 libnetwork
 endpoint-object is defined in the
-remote plugin protocol api
+net-plugin schema
 *2
-plugin-hub:network-plugin.addRemoteEndpoint API
-*2 plugin-hub
+datastore:network-plugin.addRemoteEndpoint API
+*2 datastore
 Plugin does its thing
 to connect containers 
 across hosts

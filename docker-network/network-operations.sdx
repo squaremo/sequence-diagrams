@@ -4,7 +4,7 @@
 docker-network:Node "Docker Network"
 libnetwork:Node "libnetwork"
 Datastore:Node "Datastore"
-remote-datastore:Node[pe] "Remote Datastore"
+network-plugin:Node "Net Plugin"
 
 client1:docker-network.(docker network create foo)
 docker-network:libnetwork.createNetwork("foo")
@@ -13,27 +13,21 @@ libnetwork:Datastore.cas(Network-Store, "foo", network-object)
 cas (compare and swap) for distributed
 datastore consistency
 *1
-
+Datastore:network-plugin.Network key Watch event
 
 client1:docker-network.(docker network remove foo)
 docker-network:libnetwork.deleteNetwork("foo")
-*1 docker-network
-skipping the logic
-involved to check
-for endpoints linked
-to this network
-*1
 libnetwork:Datastore.delete(Network-Store, "foo")
-
+Datastore:network-plugin.Network key Watch event
 client1:docker-network.(docker network foo add subnet 1.0.0.0/16)
 docker-network:libnetwork.addSubnet("foo", subnet)
 libnetwork:Datastore.put(Network-Store, "foo", network-object)
-
+Datastore:network-plugin.Subnet key Watch event
 
 client1:docker-network.(docker network foo remove subnet 1.0.0.0/16)
 docker-network:libnetwork.deleteSubnet("foo", subnet)
 libnetwork:Datastore.put(Network-Store, "foo", network-object)
-]]></source>
+Datastore:network-plugin.Subnet key Watch event]]></source>
 <configuration>
 <property name="activationBarBorderThickness" value="1"/>
 <property name="actorWidth" value="25"/>
