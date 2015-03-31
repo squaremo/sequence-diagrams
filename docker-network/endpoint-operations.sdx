@@ -15,7 +15,7 @@ docker-core[1]:docker-network.createEndpoint(container-id, "foo")
 docker-network:endpoint-1=libnetwork.createEndpoint("foo")
 
 docker-network:libnetwork.linkEndpoint(container-id, endpoint-1)
-libnetwork:datastore.put(EP-store, "foo", endpoint-set)
+libnetwork:datastore.kv-put(EP-store, "foo", endpoint-set)
 
 *1 libnetwork
 endpoint-set is a set of all 
@@ -24,8 +24,13 @@ This can be eventualy-consistent
 *1
 
 datastore:network-plugin.Endpoint Watch event
-network-plugin:ipam.getIP(<subnet>)
-ipam:datastore.cas("ipam",<subnet>,<ip>)
+
+*1 network-plugin
+** IPAM integration needs attention **
+*1
+network-plugin:datastore.kv-request("ipam", <subnet>)
+datastore:ipam.IP Address request watch event
+ipam:datastore.kv-cas("ipam",<subnet>,<ip>)
 *1 network-plugin
 cas (compare and swap) for
 dist datastore consistency
@@ -34,20 +39,20 @@ dist datastore consistency
 docker-core[0]:docker-core.startContainer()
 [c: Asynchronous Datastore event on host2 for end-point creation in host1]
 
-datastore-remote:docker-network.New endpoint added to foo in host1
-*1 libnetwork
+datastore-remote:datastore.New endpoint added to foo in host1
+*1 datastore
 This async event is realized only
 on those hosts where there is an
 active watch on network "foo"
 *1
 
-docker-network:libnetwork.remoteEndpointAdded(host1, "foo", endpoint-1)
-libnetwork:datastore.remoteEndpoint(endpoint-object)
-*2 libnetwork
+
+
+*2 datastore
 endpoint-object is defined in the
 net-plugin schema
 *2
-datastore:network-plugin.addRemoteEndpoint API
+datastore:network-plugin.Endpoint watch event
 *2 datastore
 Plugin does its thing
 to connect containers 
